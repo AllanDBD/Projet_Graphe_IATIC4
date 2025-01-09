@@ -61,20 +61,16 @@ class Graphe:
             print("Clique maximale trouvée:", R)
             return
 
-        # Choisir un pivot u parmi P ⋃ X (choisissons un sommet avec le degré maximum pour optimiser)
-        P_union_X = P.union(X)
-        u = max(P_union_X, key=lambda vertex: len(self.graphe[vertex]))
-
-        # Réduire P en excluant les voisins du pivot u
-        for sommet in P - self.graphe[u]:
-            self.algo_Bron_et_Kerbosch_avec_pivot(
-                R.union({sommet}),  # Ajouter le sommet courant à R
-                P.intersection(self.graphe[sommet]),  # Voisins dans P
-                X.intersection(self.graphe[sommet])   # Voisins dans X
-            )
-            P.remove(sommet)  # Modifier P après l'itération
-            X.add(sommet)     # Ajouter à X après l'itération
-
+        else :
+            pivot = P.union(X).pop()
+            for sommet in list(P.difference(self.graphe[pivot])): # Convert P to a list to safely iterate
+                self.algo_Bron_et_Kerbosch_avec_pivot(
+                    R.union({sommet}),  # Add the current vertex to R
+                    P.intersection(self.graphe[sommet]),  # Neighbors in P
+                    X.intersection(self.graphe[sommet])   # Neighbors in X
+                )
+                P.remove(sommet)
+                X.add(sommet)
 
 
 ############################# source wikipedia ########################################
@@ -147,4 +143,4 @@ graphe.afficher()
 graphe.afficher_degre_max()
 graphe.nb_sommets_par_degre()
 graphe.nb_chemins_induits_longueur_2()
-graphe.algo_Bron_et_Kerbosch_sans_pivot(set(),set(range(graphe.n)),set())
+graphe.algo_Bron_et_Kerbosch_avec_pivot(set(),set(range(graphe.n)),set())
