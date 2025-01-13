@@ -7,6 +7,7 @@ class Graphe:
         for ligne in self.graphe:
             print(ligne)
 
+
     def degre_maximum(self):
         self.deg_max=0
         self.indice_degre_max=[]
@@ -18,15 +19,18 @@ class Graphe:
             elif len(self.graphe[i])==self.deg_max:
                 self.indice_degre_max.append(i)
 
+
     def afficher_degre_max(self):
         print("Degré max:",self.deg_max,"Sommet(s):",self.indice_degre_max)
+
 
     def nb_sommets_par_degre(self):
         nb_sommet=[0]*(self.deg_max+1)
         for i in range(self.n):
             nb_sommet[len(self.graphe[i])]=nb_sommet[len(self.graphe[i])]+1
         print(nb_sommet)
-            
+
+
     def nb_chemins_induits_longueur_2(self):
         compteur=0
         for i in range(self.n):
@@ -38,8 +42,8 @@ class Graphe:
         
         print("nombre de chemin induit longueur 2 = " ,compteur)
 
-   
-   
+
+
     def algo_Bron_et_Kerbosch_sans_pivot(self, R, P, X):
         if len(P) == 0 and len(X) == 0:
             print(R)
@@ -76,14 +80,10 @@ class Graphe:
 ############################# source wikipedia ########################################
 
 
-
-
-
-
 class Random_graphe(Graphe):
     def __init__(self):
-        self.n = int(input("Taille du graphe : "))
-        self.p = random.random()  # Probabilité aléatoire entre 0 et 1
+        self.taille_graphe = int(input("Taille du graphe : "))
+        self.probabilite_branche = random.random()  # Probabilité aléatoire entre 0 et 1
         self.graphe = self.generer_lists()
         self.degre_maximum()
         self.save_graphe()
@@ -137,6 +137,7 @@ class Import_graphe(Graphe):
             graphe.append(lists[node])
         return graphe
 
+
 #graphe = Random_graphe()
 graphe = Random_graphe()
 graphe.afficher()
@@ -144,3 +145,4 @@ graphe.afficher_degre_max()
 graphe.nb_sommets_par_degre()
 graphe.nb_chemins_induits_longueur_2()
 graphe.algo_Bron_et_Kerbosch_avec_pivot(set(),set(range(graphe.n)),set())
+
