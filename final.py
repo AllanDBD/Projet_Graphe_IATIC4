@@ -2,14 +2,22 @@ import random
 import json
 from datetime import datetime
 import timeit
-#import matplotlib.pyplot as plt
+import tkinter as tk
+
 
 class Graphe:
     
     def generer_un_graphe_random(self):
         self.taille_graphe = int(input("Taille du graphe : "))
-        self.probabilite_branche = random.random()  # Probabilité aléatoire entre 0 et 1
-        print(f"Probabilité de branche : {self.probabilite_branche:.2f}")
+        p=input("voulez-vous donner la probanilité d'apparition de branche tapez o si oui sinon n'importe quel autre touche ")
+        if p=="o" or p=="O":
+            while True:
+                self.probabilite_branche = float(input("Probabilité de branche au format 0.XX : "))
+                if 1>self.probabilite_branche > 0 :
+                    break
+        else:
+            self.probabilite_branche = random.random()  # Probabilité aléatoire entre 0 et 1
+            print(f"Probabilité de branche : {self.probabilite_branche:.2f}")
         self.ordonne=True
         self.generer_matrice_random()
         self.degre_maximum()
@@ -151,27 +159,84 @@ class Graphe:
         for i in range(self.taille_graphe):
             nb_sommet[len(self.matrice_adjacence_ordonne[i])] += 1
         
-        '''print("Nombre de noeud par degré: [ ",end="")
+        print("Nombre de noeud par degré: [ ",end="")
         for i in range(self.deg_max-1):
             if nb_sommet[i]!=0:
                 print(i,":",nb_sommet[i],", ",end="")
         if nb_sommet[self.deg_max]!=0:
             print(self.deg_max,":",nb_sommet[self.deg_max],"]")
-        '''
-        '''
-        # Filtrer les indices où les valeurs sont différentes de 0
-        indices = [i for i, val in enumerate(nb_sommet) if val != 0]
-        valeurs = [nb_sommet[i] for i in indices]
-
-        # Afficher le graphe à bâtons
-        plt.bar(indices, valeurs)
-        plt.xlabel('Degré des sommets')
-        plt.ylabel('Nombre de sommets')
-        plt.title('Nombre de sommets par degré')
-        plt.xticks(indices)  # S'assurer que seuls les indices pertinents sont affichés
-        plt.show()'''
+            self.afficher_graphique(nb_sommet)
+        
 
 
+
+    def afficher_graphique(self,liste):
+        # Création de la fenêtre
+        fenetre = tk.Tk()
+        fenetre.title("Graphique à barres")
+        fenetre.bg="white"
+        fenetre.geometry("1080x600")
+        
+        # Dimensions de la zone de dessin
+        largeur_canvas = 1080
+        hauteur_canvas = 600
+        
+        # Création du canvas pour dessiner
+        canvas = tk.Canvas(fenetre, width=largeur_canvas, height=hauteur_canvas, bg="white")
+        canvas.pack()
+        
+        # Paramètres du graphique
+        marge_gauche = 50
+        marge_bas = 30
+        max_valeur = max(liste)
+        begin=False
+        for i, valeur in enumerate(liste):
+            if begin:
+                x1 = marge_gauche + (i-debut) * (espace_barres)
+                y1 = hauteur_canvas - marge_bas
+                x2 = x1 + espace_barres-1
+                y2 = y1 - (valeur / max_valeur) * (hauteur_canvas -2* marge_bas)
+                canvas.create_rectangle(x1, y1, x2, y2, fill="skyblue", outline="black")
+            elif valeur>0:
+                begin=True
+                debut=i
+                espace_barres = int((largeur_canvas-2*marge_gauche) //  (len(liste)-debut))
+                x1 = marge_gauche + (i-debut) * (espace_barres)
+                y1 = hauteur_canvas - marge_bas
+                x2 = x1 + espace_barres-1
+                y2 = y1 - (valeur / max_valeur) * (hauteur_canvas -2* marge_bas)
+                canvas.create_rectangle(x1, y1, x2, y2, fill="skyblue", outline="black")
+
+           
+            
+        
+        
+
+        if max_valeur>12:
+            number_of_indicators_y=12
+        else:
+            number_of_indicators_y=max_valeur
+        step_y = max_valeur /number_of_indicators_y
+        for i in range(number_of_indicators_y + 1):
+            y = hauteur_canvas - marge_bas - i * (hauteur_canvas - 2 * marge_bas) // number_of_indicators_y
+            canvas.create_line(marge_gauche - 5, y, marge_gauche, y)  # Marqueurs sur l'axe Y
+            canvas.create_text(marge_gauche - 15, y, text=str(int(i * step_y)), font=("Arial", 8))
+
+        number_of_indicators_x=35
+        if len(liste)-debut<35:
+            number_of_indicators_x=len(liste)-debut
+        step_x = (len(liste)-debut) / number_of_indicators_x
+        for i in range(number_of_indicators_x):
+            x = marge_gauche + i * step_x * espace_barres+0.5*espace_barres
+            canvas.create_line(x, hauteur_canvas - marge_bas + 5, x, hauteur_canvas - marge_bas - 5)  # Marqueurs sur l'axe X
+            canvas.create_text(x, hauteur_canvas - marge_bas + 15, text=str(int((i * step_x)+debut)), font=("Arial", 8))
+        
+        # Ajouter les axes
+        canvas.create_line(marge_gauche, hauteur_canvas - marge_bas, largeur_canvas - marge_gauche, hauteur_canvas - marge_bas, arrow=tk.LAST)  # Axe X
+        canvas.create_line(marge_gauche, hauteur_canvas - marge_bas, marge_gauche, marge_bas, arrow=tk.LAST)  # Axe Y
+        
+        # Affichage de la fenêtre
+        fenetre.mainloop()
 
 
     def nb_chemins_induits_longueur_2(self):

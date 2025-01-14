@@ -1,103 +1,62 @@
-import random
-import json
-from datetime import datetime
+import tkinter as tk
 
-class Graphe:
-    def afficher(self):
-        for ligne in self.graphe:
-            print(ligne)
-
-    def degre_maximum(self):
-        self.deg_max=0
-        self.indice_degre_max=[]
-        for i in range(self.n):
-            if len(self.graphe[i]) > self.deg_max:
-                self.deg_max=len(self.graphe[i])
-                self.indice_degre_max=[]
-                self.indice_degre_max.append(i)
-            elif len(self.graphe[i])==self.deg_max:
-                self.indice_degre_max.append(i)
-
-    def afficher_degre_max(self):
-        print("Degré max:",self.deg_max,"Sommet(s):",self.indice_degre_max)
-
-    def nb_sommets_par_degre(self):
-        nb_sommet=[0]*(self.deg_max+1)
-        for i in range(self.n):
-            nb_sommet[len(self.graphe[i])]=nb_sommet[len(self.graphe[i])]+1
-        print(nb_sommet)
-            
-    def nb_chemins_induits_longueur_2(self):
-        compteur=0
-        for i in range(self.n):
-            for k in self.graphe[i]:
-                for j in self.graphe[k]:
-                    if j>i:
-                        if i not in self.graphe[j]:              
-                            compteur+=1
-        
-        print("nombre de chemin induit longueur 2 = " ,compteur)
-
-class Random_graphe(Graphe):
-    def __init__(self):
-        self.n = int(input("Taille du graphe : "))
-        self.p = random.random()  # Probabilité aléatoire entre 0 et 1
-        self.graphe = self.generer_lists()
-        self.degre_maximum()
-        self.save_graphe()
-
-    def generer_lists(self):
-        graphe = []
-        for i in range(self.n):
-            ligne = []
-            graphe.append(ligne)
-        for j in range(self.n):
-            for k in range(j+1,self.n):
-                if random.random() < self.p:
-                    graphe[j].append(k)
-                    graphe[k].append(j)
-        return graphe
+def afficher_graphique(liste):
+    # Création de la fenêtre
+    fenetre = tk.Tk()
+    fenetre.title("Graphique à barres")
+    fenetre.bg="white"
+    fenetre.geometry("800x520")
     
-    def save_graphe(self):
-        answer=input("Voulez-vous sauvegarder ce graphe aléatoire dans un fichier? (o/O si oui): ")
-        if(answer=="o" or answer=="O"):
-            answer=input("Souhaitez-vous choisir le nom du fichier où sauvegarder le graphe? (o/O si oui, n/N sinon): ")
-            if(answer=="o" or answer=="O"):
-                file_name=input("Entrez le nom du fichier: ")
-            elif(answer=="n" or answer=="N"):
-                current_time = datetime.now()
-                file_name = "random_graphe-"+current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".json"
-            else:
-                return
-            graphe = {str(i): self.graphe[i] for i in range(self.n)}
-            data= {
-                "n": self.n,
-                "graphe": graphe
-            }
-            with open(file_name, "w") as file:
-                json.dump(data, file, indent=4)
+    # Dimensions de la zone de dessin
+    largeur_canvas = 800
+    hauteur_canvas = 520
+    
+    # Création du canvas pour dessiner
+    canvas = tk.Canvas(fenetre, width=largeur_canvas, height=hauteur_canvas, bg="white")
+    canvas.pack()
+    
+    # Paramètres du graphique
+    marge_gauche = 50
+    marge_bas = 30
+    espace_barres = int(largeur_canvas //  len(liste))
+    max_valeur = max(liste)
+    
+    for i, valeur in enumerate(liste):
+        x1 = marge_gauche + i * (espace_barres)
+        y1 = hauteur_canvas - marge_bas
+        x2 = x1 + espace_barres-1
+        y2 = y1 - (valeur / max_valeur) * (hauteur_canvas -2* marge_bas)
+        
+        canvas.create_rectangle(x1, y1, x2, y2, fill="skyblue", outline="black")
+    
 
-class Import_graphe(Graphe):
-    def __init__(self,file):
-        #self.file= str(input("Entrer le nom du fichier dont vous souhaitez importer le graphe: "))
-        # Lecture du fichier JSON
-        with open(file, "r") as file:
-            self.data = json.load(file)
+    if max_valeur>12:
+        number_of_indicators_y=12
+    else:
+        number_of_indicators_y=max_valeur
+    step_y = max_valeur / number_of_indicators_y
+    for i in range(number_of_indicators_y + 1):
+        y = hauteur_canvas - marge_bas - i * (hauteur_canvas - 2 * marge_bas) // number_of_indicators_y
+        canvas.create_line(marge_gauche - 5, y, marge_gauche, y)  # Marqueurs sur l'axe Y
+        canvas.create_text(marge_gauche - 15, y, text=str(int(i * step_y)), font=("Arial", 8))
 
-        self.n = self.data["n"]
-        self.graphe = self.import_listes()
-        self.degre_maximum()
+    number_of_indicators_x=12
+    if len(liste)<12:
+        number_of_indicators_x=len(liste)
+    step_x = len(liste) / number_of_indicators_x
+    for i in range(number_of_indicators_x + 1):
+        x = marge_gauche + i * step_x * espace_barres
+        canvas.create_line(x, hauteur_canvas - marge_bas + 5, x, hauteur_canvas - marge_bas - 5)  # Marqueurs sur l'axe X
+        canvas.create_text(x, hauteur_canvas - marge_bas + 15, text=str(int(i * step_x)), font=("Arial", 8))
+    
+    # Ajouter les axes
+    canvas.create_line(marge_gauche, hauteur_canvas - marge_bas, largeur_canvas - marge_gauche, hauteur_canvas - marge_bas, arrow=tk.LAST)  # Axe X
+    canvas.create_line(marge_gauche, hauteur_canvas - marge_bas, marge_gauche, marge_bas, arrow=tk.LAST)  # Axe Y
+    
+    # Affichage de la fenêtre
+    fenetre.mainloop()
 
-    def import_listes(self):    
-        lists = self.data["graphe"]
-        graphe=[]
-        for node in lists:
-            graphe.append(lists[node])
-        return graphe
+# Exemple d'utilisation avec une liste
+ma_liste = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 2, 3, 2, 1, 3, 4, 0, 0, 3, 3, 2, 2, 4, 1, 2, 4, 4, 1, 3, 4, 3, 2, 7, 7, 0, 2, 7, 2, 3, 2, 8, 5, 6, 8, 5, 4, 1, 4, 4, 3, 3, 3, 3, 6, 9, 6, 5, 3, 3, 5, 5, 3, 4, 3, 6, 2, 1, 3, 2, 4, 5, 4, 2, 4, 2, 0, 4, 1, 1, 1, 2, 1, 0, 0, 1, 5, 0, 2, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1]
 
-#graphe = Random_graphe()
-graphe = Random_graphe()
-graphe.afficher()
-graphe.afficher_degre_max()
-graphe.nb_sommets_par_degre()
-graphe.nb_chemins_induits_longueur_2()
+afficher_graphique(ma_liste)
